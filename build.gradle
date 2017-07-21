@@ -1,0 +1,44 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.1.2-5"
+    id "org.jetbrains.kotlin.kapt" version "1.1.2-5"
+    id "com.github.johnrengelman.shadow" version "1.2.4"
+}
+
+group "de.randombyte"
+version "0.1"
+
+repositories {
+    jcenter()
+    maven { url "https://repo.spongepowered.org/maven/" }
+    maven { url "https://jitpack.io" }
+}
+
+configurations {
+    compile.extendsFrom shadow
+    compile.extendsFrom kapt
+}
+
+dependencies {
+    shadow "org.jetbrains.kotlin:kotlin-stdlib-jre8:1.1.2-5"
+    kapt "org.spongepowered:spongeapi:5.1.0"
+    shadow("com.github.randombyte-developer.kosp:kosp:v0.5.1") { transitive = false }
+}
+
+jar.enabled = false
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+
+    relocate "kotlin", "de.randombyte.commandutils.shaded.kotlin"
+    relocate "de.randombyte.kosp", "de.randombyte.commandutils.shaded.kosp"
+
+    classifier = null // Remove '-all' suffix from output file name
+}
+build.dependsOn shadowJar
+//signArchives.dependsOn shadowJar
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
