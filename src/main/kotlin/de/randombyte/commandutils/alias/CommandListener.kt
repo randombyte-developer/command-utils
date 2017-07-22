@@ -18,18 +18,23 @@ class CommandListener(
     fun onCommand(event: SendCommandEvent, @First commandSource: CommandSource) {
         val wholeCommand = event.wholeCommand
         val matchedAliasedMap = configAccessor.get().alias.aliases.mapNotNull { (alias, aliasConfig) ->
-            aliasConfig to (AliasParser.parse(alias, wholeCommand) ?: return@mapNotNull null)
+            (alias to aliasConfig) to (AliasParser.parse(alias, wholeCommand) ?: return@mapNotNull null)
         }.toList()
 
         if (matchedAliasedMap.isEmpty()) return // doesn't match any of our aliases
 
         if (matchedAliasedMap.size > 1) {
-            val matchedAliasesString = matchedAliasedMap.joinToString(separator = ", ", prefix = "[", postfix = "]", transform = { "'$it'" })
-            logger.error("More than alias matched! command: '$wholeCommand'; matched aliases: $matchedAliasesString")
+            val matchedAliasesString = matchedAliasedMap.joinToString(separator = ", ", prefix = "[", postfix = "]", transform = { "'${it.first.first}'" })
+            logger.error("More than one alias matched! command: '$wholeCommand'; matched aliases: $matchedAliasesString")
             throw IllegalArgumentException("More than one alias matched, report to admin!")
         }
 
-        val (aliasConfig, arguments) = matchedAliasedMap.single()
+        val (aliasEntry, arguments) = matchedAliasedMap.single()
+        val (_, aliasConfig) = aliasEntry
+        if (!commandSource.hasPermission(aliasConfig.permission)) {
+            throw RuntimeException("You don't have the permission to execute this command!")
+        }
+
         aliasConfig.commands.forEach {
             var modifiedWholeCommand = it
             arguments.forEach { (parameter, argument) -> modifiedWholeCommand = modifiedWholeCommand.replace(parameter, argument) }
