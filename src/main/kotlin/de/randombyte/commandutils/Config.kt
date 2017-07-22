@@ -1,12 +1,14 @@
 package de.randombyte.commandutils
 
+import de.randombyte.commandutils.alias.AliasConfig
 import ninja.leaping.configurate.objectmapping.Setting
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable
 import java.util.*
 
 @ConfigSerializable
 data class Config(
-        @Setting val executeWhenOnline: ExecuteWhenOnline = Config.ExecuteWhenOnline()
+        @Setting val executeWhenOnline: ExecuteWhenOnline = Config.ExecuteWhenOnline(),
+        @Setting val alias: AliasConfig = AliasConfig()
 ) {
     @ConfigSerializable
     data class ExecuteWhenOnline(

@@ -5,9 +5,10 @@ import de.randombyte.commandutils.CommandUtils.Companion.AUTHOR
 import de.randombyte.commandutils.CommandUtils.Companion.ID
 import de.randombyte.commandutils.CommandUtils.Companion.NAME
 import de.randombyte.commandutils.CommandUtils.Companion.VERSION
+import de.randombyte.commandutils.alias.CommandListener
 import de.randombyte.commandutils.delay.DelayCommand
 import de.randombyte.commandutils.executewhenonline.ExecuteWhenOnlineCommand
-import de.randombyte.commandutils.executewhenonline.ExecuteWhenOnlineHandler
+import de.randombyte.commandutils.executewhenonline.PlayerJoinListener
 import de.randombyte.commandutils.service.CommandUtilsService
 import de.randombyte.commandutils.service.CommandUtilsServiceImpl
 import de.randombyte.kosp.bstats.BStats
@@ -42,7 +43,7 @@ class CommandUtils @Inject constructor(
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "1.0"
+        const val VERSION = "1.1"
         const val AUTHOR = "RandomByte"
 
         const val ROOT_PERMISSION = ID
@@ -72,13 +73,13 @@ class CommandUtils @Inject constructor(
     @Listener
     fun onInit(event: GameInitializationEvent) {
         reloadConfig()
-        ExecuteWhenOnlineHandler
         registerCommands()
     }
 
     @Listener
     fun onPostInit(event: GamePostInitializationEvent) {
-        ExecuteWhenOnlineHandler.setup(plugin = this, configAccessor = configAccessor)
+        Sponge.getEventManager().registerListeners(this, PlayerJoinListener(this, configAccessor))
+        Sponge.getEventManager().registerListeners(this, CommandListener(logger, configAccessor))
 
         Sponge.getServiceManager().setProvider(this, CommandUtilsService::class.java,
                 CommandUtilsServiceImpl(configAccessor))

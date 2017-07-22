@@ -1,7 +1,7 @@
 package de.randombyte.commandutils.service
 
 import de.randombyte.commandutils.ConfigAccessor
-import de.randombyte.commandutils.executewhenonline.ExecuteWhenOnlineHandler
+import de.randombyte.commandutils.executeForPlayer
 import de.randombyte.kosp.extensions.getPlayer
 import java.util.*
 
@@ -10,7 +10,7 @@ class CommandUtilsServiceImpl(val configAccessor: ConfigAccessor) : CommandUtils
         val player = playerUuid.getPlayer()
         // shortcut, the player is already online
         if (player != null) {
-            ExecuteWhenOnlineHandler.execute(player, newCommand)
+            executeForPlayer(newCommand, player)
             return
         }
 
