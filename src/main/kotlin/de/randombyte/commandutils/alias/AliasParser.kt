@@ -7,7 +7,7 @@ object AliasParser {
     private val ARG_REGEX = "\\{\\d*}".toRegex()
     private val VAR_ARG_REGEX = "\\{\\.{3}}".toRegex() // can only be the last thing in the command
 
-    private enum class SplitType { WORD, ARG, VAR_ARG }
+    enum class SplitType { WORD, ARG, VAR_ARG }
 
     fun parse(alias: String, command: String): Map<String, String>? {
         val aliasSplits = alias.split(delimiters = " ")
