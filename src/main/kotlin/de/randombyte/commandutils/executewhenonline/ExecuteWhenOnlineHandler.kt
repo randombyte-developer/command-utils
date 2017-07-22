@@ -2,6 +2,7 @@ package de.randombyte.commandutils.executewhenonline
 
 import de.randombyte.commandutils.CommandUtils
 import de.randombyte.commandutils.ConfigAccessor
+import de.randombyte.kosp.extensions.executeCommand
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.entity.living.player.Player
 
@@ -20,6 +21,6 @@ object ExecuteWhenOnlineHandler {
         val executeAsConsole = fullCommand.startsWith(EXECUTE_AS_CONSOLE_PREFIX)
         val commandSource = if (executeAsConsole) Sponge.getServer().console else player
 
-        Sponge.getCommandManager().process(commandSource, unprefixedCommand)
+        commandSource.executeCommand(unprefixedCommand)
     }
 }

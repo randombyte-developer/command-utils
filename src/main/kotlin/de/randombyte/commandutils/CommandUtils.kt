@@ -5,6 +5,7 @@ import de.randombyte.commandutils.CommandUtils.Companion.AUTHOR
 import de.randombyte.commandutils.CommandUtils.Companion.ID
 import de.randombyte.commandutils.CommandUtils.Companion.NAME
 import de.randombyte.commandutils.CommandUtils.Companion.VERSION
+import de.randombyte.commandutils.delay.DelayCommand
 import de.randombyte.commandutils.executewhenonline.ExecuteWhenOnlineCommand
 import de.randombyte.commandutils.executewhenonline.ExecuteWhenOnlineHandler
 import de.randombyte.commandutils.service.CommandUtilsService
@@ -16,6 +17,7 @@ import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import ninja.leaping.configurate.loader.ConfigurationLoader
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
+import org.spongepowered.api.command.args.GenericArguments
 import org.spongepowered.api.command.args.GenericArguments.remainingRawJoinedStrings
 import org.spongepowered.api.command.args.GenericArguments.string
 import org.spongepowered.api.command.spec.CommandSpec
@@ -40,13 +42,15 @@ class CommandUtils @Inject constructor(
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "0.1"
+        const val VERSION = "1.0"
         const val AUTHOR = "RandomByte"
 
         const val ROOT_PERMISSION = ID
 
         const val PLAYER_OR_UUID_ARG = "playerOrUuid"
         const val COMMAND_ARG = "command"
+
+        const val DELAY_ARGUMENT = "delay"
     }
 
     private val configManager = ConfigManager(
@@ -101,10 +105,17 @@ class CommandUtils @Inject constructor(
     private fun registerCommands() {
         Sponge.getCommandManager().register(this, CommandSpec.builder()
                 .child(CommandSpec.builder()
-                        .permission(ROOT_PERMISSION)
+                        .permission("$ROOT_PERMISSION.execute-when-online")
                         .arguments(string(PLAYER_OR_UUID_ARG.toText()), remainingRawJoinedStrings(COMMAND_ARG.toText()))
                         .executor(ExecuteWhenOnlineCommand())
                         .build(), "executeWhenOnline")
+                .child(CommandSpec.builder()
+                        .permission("$ROOT_PERMISSION.delay")
+                        .arguments(
+                                string(DELAY_ARGUMENT.toText()),
+                                GenericArguments.remainingJoinedStrings(COMMAND_ARG.toText()))
+                        .executor(DelayCommand(plugin = this))
+                        .build(), "delay")
                 .build(), "commandUtils", "cmdUtils", "cu")
     }
 }
