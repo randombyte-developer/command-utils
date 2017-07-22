@@ -15,10 +15,21 @@ object AliasParser {
 
         if (commandSplits.size < aliasSplits.size) return null // command is to short for this alias
 
+        // TODO: cache this, recompute on reload/restart
         val splitTypes = aliasSplits.mapIndexed { index, aliasSplit ->
-            if (ARG_REGEX.matches(aliasSplit)) index to ARG
-            else if (VAR_ARG_REGEX.matches(aliasSplit)) index to VAR_ARG
-            else index to WORD
+            index to when {
+                ARG_REGEX.matches(aliasSplit) -> ARG
+                VAR_ARG_REGEX.matches(aliasSplit) -> VAR_ARG
+                else -> WORD
+            }
+        }
+
+        val varArgAmount = splitTypes.count { (_, type) -> type == VAR_ARG }
+        if (varArgAmount > 1) {
+            throw IllegalArgumentException("'{...}' can only be used once! alias: '$alias'")
+        }
+        if (varArgAmount == 1 && splitTypes.last().second != VAR_ARG) {
+            throw IllegalArgumentException("'{...}' can only be used at the end of the alias! alias: '$alias'")
         }
 
         val aliasWords = splitTypes
@@ -35,7 +46,7 @@ object AliasParser {
         return splitTypes.mapNotNull { (index, splitType) ->
             when (splitType) {
                 ARG -> aliasSplits[index] to commandSplits[index]
-                VAR_ARG -> aliasSplits[index] to (commandSplits.drop(index)).joinToString(separator = " ") // drop the first elements
+                VAR_ARG -> aliasSplits[index] to (commandSplits[index])
                 else -> null
             }
         }.toMap()
