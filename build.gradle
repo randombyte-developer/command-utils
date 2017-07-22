@@ -5,7 +5,7 @@ plugins {
 }
 
 group "de.randombyte"
-version "1.1"
+version "1.2"
 
 repositories {
     jcenter()
@@ -35,7 +35,7 @@ shadowJar {
     classifier = null // Remove '-all' suffix from output file name
 }
 build.dependsOn shadowJar
-//signArchives.dependsOn shadowJar
+signArchives.dependsOn shadowJar
 
 compileKotlin {
     kotlinOptions {
