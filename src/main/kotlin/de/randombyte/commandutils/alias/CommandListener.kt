@@ -46,5 +46,5 @@ class CommandListener(
     }
 
     private val SendCommandEvent.wholeCommand: String
-        get() = "$command $arguments"
+        get() = "$command $arguments".trim()
 }
