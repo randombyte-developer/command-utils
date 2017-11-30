@@ -3,6 +3,7 @@ package de.randombyte.commandutils.alias
 import de.randombyte.commandutils.ConfigAccessor
 import de.randombyte.commandutils.execute
 import de.randombyte.commandutils.executeForPlayer
+import de.randombyte.kosp.extensions.toText
 import org.slf4j.Logger
 import org.spongepowered.api.command.CommandSource
 import org.spongepowered.api.entity.living.player.Player
@@ -32,7 +33,8 @@ class CommandListener(
         val (aliasEntry, arguments) = matchedAliasedMap.single()
         val (_, aliasConfig) = aliasEntry
         if (!commandSource.hasPermission(aliasConfig.permission)) {
-            throw RuntimeException("You don't have the permission to execute this command!")
+            commandSource.sendMessage("You don't have the permission to execute this command!".toText())
+            return
         }
 
         aliasConfig.commands.forEach {
