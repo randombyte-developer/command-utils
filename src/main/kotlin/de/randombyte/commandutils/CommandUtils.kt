@@ -7,6 +7,7 @@ import de.randombyte.commandutils.CommandUtils.Companion.NAME
 import de.randombyte.commandutils.CommandUtils.Companion.VERSION
 import de.randombyte.commandutils.alias.CommandListener
 import de.randombyte.commandutils.delay.DelayCommand
+import de.randombyte.commandutils.executeonserverstartup.ServerStartupListener
 import de.randombyte.commandutils.executewhenonline.ExecuteWhenOnlineCommand
 import de.randombyte.commandutils.executewhenonline.PlayerJoinListener
 import de.randombyte.commandutils.service.CommandUtilsService
@@ -43,7 +44,7 @@ class CommandUtils @Inject constructor(
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "1.6"
+        const val VERSION = "1.7"
         const val AUTHOR = "RandomByte"
 
         const val ROOT_PERMISSION = ID
@@ -79,6 +80,7 @@ class CommandUtils @Inject constructor(
     @Listener
     fun onPostInit(event: GamePostInitializationEvent) {
         Sponge.getEventManager().registerListeners(this, PlayerJoinListener(this, configAccessor))
+        Sponge.getEventManager().registerListeners(this, ServerStartupListener(this, configAccessor))
         Sponge.getEventManager().registerListeners(this, CommandListener(logger, configAccessor))
 
         Sponge.getServiceManager().setProvider(this, CommandUtilsService::class.java,
