@@ -13,7 +13,7 @@ class ServerStartupListener(val plugin: CommandUtils, val configAccessor: Config
         Task.builder()
                 .delayTicks(1)
                 .execute { ->
-                    configAccessor.get().executeOnServerStartup.commands.forEach { println(it); executeAsConsole(it) }
+                    configAccessor.get().executeOnServerStartup.commands.forEach { executeAsConsole(it) }
                 }
                 .submit(plugin)
     }
