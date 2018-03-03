@@ -3,9 +3,11 @@ package de.randombyte.commandutils.alias
 import de.randombyte.commandutils.ConfigAccessor
 import de.randombyte.commandutils.execute
 import de.randombyte.commandutils.executeForPlayer
+import de.randombyte.commandutils.process
 import de.randombyte.kosp.config.serializers.duration.SimpleDurationTypeSerializer
 import de.randombyte.kosp.extensions.red
 import de.randombyte.kosp.extensions.toText
+import me.rojo8399.placeholderapi.PlaceholderService
 import org.slf4j.Logger
 import org.spongepowered.api.command.CommandSource
 import org.spongepowered.api.entity.living.player.Player
@@ -17,7 +19,8 @@ import java.util.*
 
 class CommandListener(
         val logger: Logger,
-        val configAccessor: ConfigAccessor
+        val configAccessor: ConfigAccessor,
+        val getPlaceholderService: () -> PlaceholderService?
 ) {
     @Listener
     fun onCommand(event: SendCommandEvent, @First commandSource: CommandSource) {
@@ -63,7 +66,13 @@ class CommandListener(
         aliasConfig.commands.forEach {
             var modifiedWholeCommand = it
             arguments.forEach { (parameter, argument) -> modifiedWholeCommand = modifiedWholeCommand.replace(parameter, argument) }
-            if (commandSource is Player) executeForPlayer(modifiedWholeCommand, commandSource)
+            if (commandSource is Player) {
+                val placeholderService = getPlaceholderService()
+                if (placeholderService != null) {
+                    modifiedWholeCommand = modifiedWholeCommand.process(placeholderService, commandSource)
+                }
+                executeForPlayer(modifiedWholeCommand, commandSource)
+            }
             else execute(modifiedWholeCommand, commandSource)
         }
     }

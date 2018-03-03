@@ -1,12 +1,12 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.1.2-5"
-    id "org.jetbrains.kotlin.kapt" version "1.1.2-5"
+    id "org.jetbrains.kotlin.jvm" version "1.2.10"
+    id "org.jetbrains.kotlin.kapt" version "1.2.10"
     id "com.github.johnrengelman.shadow" version "1.2.4"
     id "flavor.pie.promptsign" version "1.0.2"
 }
 
 group "de.randombyte"
-version "1.7.5"
+version "1.8"
 
 repositories {
     jcenter()
@@ -20,9 +20,11 @@ configurations {
 }
 
 dependencies {
-    shadow "org.jetbrains.kotlin:kotlin-stdlib-jre8:1.1.2-5"
+    shadow "org.jetbrains.kotlin:kotlin-stdlib-jre8:1.2.10"
     kapt "org.spongepowered:spongeapi:5.1.0"
-    shadow("com.github.randombyte-developer.kosp:kosp:v0.5.1") { transitive = false }
+    shadow("com.github.randombyte-developer.kosp:kosp:v0.5.4.1") { transitive = false }
+    //compile "com.github.rojo8399:PlaceholderAPI:4.4"
+    compile files("run/vanilla/mods/PlaceholderAPI-4.5.jar")
 }
 
 jar.enabled = false

@@ -4,6 +4,7 @@ import com.google.inject.Inject
 import de.randombyte.commandutils.CommandUtils.Companion.AUTHOR
 import de.randombyte.commandutils.CommandUtils.Companion.ID
 import de.randombyte.commandutils.CommandUtils.Companion.NAME
+import de.randombyte.commandutils.CommandUtils.Companion.PLACEHOLDER_API_ID
 import de.randombyte.commandutils.CommandUtils.Companion.VERSION
 import de.randombyte.commandutils.alias.CommandListener
 import de.randombyte.commandutils.delay.DelayCommand
@@ -15,6 +16,8 @@ import de.randombyte.commandutils.service.CommandUtilsServiceImpl
 import de.randombyte.kosp.bstats.BStats
 import de.randombyte.kosp.config.ConfigManager
 import de.randombyte.kosp.extensions.toText
+import de.randombyte.kosp.getServiceOrFail
+import me.rojo8399.placeholderapi.PlaceholderService
 import ninja.leaping.configurate.commented.CommentedConfigurationNode
 import ninja.leaping.configurate.loader.ConfigurationLoader
 import org.slf4j.Logger
@@ -28,13 +31,15 @@ import org.spongepowered.api.event.Listener
 import org.spongepowered.api.event.game.GameReloadEvent
 import org.spongepowered.api.event.game.state.GameInitializationEvent
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent
+import org.spongepowered.api.plugin.Dependency
 import org.spongepowered.api.plugin.Plugin
 import org.spongepowered.api.plugin.PluginContainer
 
 @Plugin(id = ID,
         name = NAME,
         version = VERSION,
-        authors = arrayOf(AUTHOR))
+        authors = [AUTHOR],
+        dependencies = [(Dependency(id = PLACEHOLDER_API_ID, optional = true))])
 class CommandUtils @Inject constructor(
         val logger: Logger,
         @DefaultConfig(sharedRoot = true) configurationLoader: ConfigurationLoader<CommentedConfigurationNode>,
@@ -44,8 +49,10 @@ class CommandUtils @Inject constructor(
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "1.7.5"
+        const val VERSION = "1.8"
         const val AUTHOR = "RandomByte"
+
+        const val PLACEHOLDER_API_ID = "placeholderapi"
 
         const val ROOT_PERMISSION = ID
 
@@ -54,6 +61,8 @@ class CommandUtils @Inject constructor(
 
         const val DELAY_ARGUMENT = "delay"
     }
+
+    private var placeholderApi: PlaceholderService? = null
 
     private val configManager = ConfigManager(
             configLoader = configurationLoader,
@@ -75,6 +84,7 @@ class CommandUtils @Inject constructor(
 
     @Listener
     fun onInit(event: GameInitializationEvent) {
+        loadPlaceholderApi()
         reloadConfig()
         registerCommands()
     }
@@ -83,7 +93,7 @@ class CommandUtils @Inject constructor(
     fun onPostInit(event: GamePostInitializationEvent) {
         Sponge.getEventManager().registerListeners(this, PlayerJoinListener(this, configAccessor))
         Sponge.getEventManager().registerListeners(this, ServerStartupListener(this, configAccessor))
-        Sponge.getEventManager().registerListeners(this, CommandListener(logger, configAccessor))
+        Sponge.getEventManager().registerListeners(this, CommandListener(logger, configAccessor, { placeholderApi }))
 
         Sponge.getServiceManager().setProvider(this, CommandUtilsService::class.java,
                 CommandUtilsServiceImpl(configAccessor))
@@ -122,5 +132,12 @@ class CommandUtils @Inject constructor(
                         .executor(DelayCommand(plugin = this))
                         .build(), "delay")
                 .build(), "commandUtils", "cmdUtils", "cu")
+    }
+
+    private fun loadPlaceholderApi() {
+        if (Sponge.getPluginManager().getPlugin(PLACEHOLDER_API_ID).isPresent) {
+            placeholderApi = getServiceOrFail(PlaceholderService::class,
+                    failMessage = "Failed getting the placeholder API despite the plugin itself being loaded!")
+        }
     }
 }
