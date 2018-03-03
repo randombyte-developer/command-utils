@@ -58,7 +58,9 @@ class CommandUtils @Inject constructor(
     private val configManager = ConfigManager(
             configLoader = configurationLoader,
             clazz = Config::class.java,
-            hyphenSeparatedKeys = true
+            hyphenSeparatedKeys = true,
+            simpleDateSerialization = true,
+            simpleDurationSerialization = true
     )
 
     private lateinit var config: Config
