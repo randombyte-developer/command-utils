@@ -1,4 +1,4 @@
-package de.randombyte.commandutils.executewhenonline
+package de.randombyte.commandutils.execute.whenonline
 
 import de.randombyte.commandutils.CommandUtils
 import de.randombyte.commandutils.executeCommand

@@ -1,4 +1,4 @@
-package de.randombyte.commandutils.delay
+package de.randombyte.commandutils.execute.delay
 
 import de.randombyte.commandutils.CommandUtils
 import de.randombyte.commandutils.executeCommand

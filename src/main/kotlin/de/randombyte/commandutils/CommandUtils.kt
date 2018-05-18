@@ -9,10 +9,12 @@ import de.randombyte.commandutils.CommandUtils.Companion.VERSION
 import de.randombyte.commandutils.alias.CommandListener
 import de.randombyte.commandutils.config.ConfigAccessor
 import de.randombyte.commandutils.config.ConfigUpdater
-import de.randombyte.commandutils.delay.DelayCommand
+import de.randombyte.commandutils.execute.after.AfterCommand
+import de.randombyte.commandutils.execute.before.BeforeCommand
+import de.randombyte.commandutils.execute.delay.DelayCommand
+import de.randombyte.commandutils.execute.whenonline.ExecuteWhenOnlineCommand
+import de.randombyte.commandutils.execute.whenonline.PlayerJoinListener
 import de.randombyte.commandutils.executeonserverstartup.ServerStartupListener
-import de.randombyte.commandutils.executewhenonline.ExecuteWhenOnlineCommand
-import de.randombyte.commandutils.executewhenonline.PlayerJoinListener
 import de.randombyte.commandutils.service.CommandUtilsService
 import de.randombyte.commandutils.service.CommandUtilsServiceImpl
 import de.randombyte.kosp.extensions.toText
@@ -56,8 +58,8 @@ class CommandUtils @Inject constructor(
         const val PLAYER_NAME_ARG = "player_name"
         const val PLAYER_UUID_ARG = "player_uuid"
         const val COMMAND_ARG = "command"
-
         const val DELAY_ARG = "delay"
+        const val TIMESTAMP_ARG = "timestamp"
 
         private val LAZY_INSTANCE = lazy { Sponge.getPluginManager().getPlugin(ID).get().instance.get() as CommandUtils }
         val INSTANCE: CommandUtils
@@ -95,23 +97,51 @@ class CommandUtils @Inject constructor(
     }
 
     private fun registerCommands() {
+        val executeWhenOnlineCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.execute-when-online")
+                .arguments(
+                        firstParsing(
+                                uuid(PLAYER_UUID_ARG.toText()),
+                                user(PLAYER_NAME_ARG.toText())),
+                        remainingRawJoinedStrings(COMMAND_ARG.toText()))
+                .executor(ExecuteWhenOnlineCommand())
+                .build()
+
+        val executeDelayCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.delay")
+                .arguments(
+                        string(DELAY_ARG.toText()),
+                        remainingRawJoinedStrings(COMMAND_ARG.toText()))
+                .executor(DelayCommand())
+                .build()
+
+        val executeBeforeCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.before")
+                .arguments(
+                        string(TIMESTAMP_ARG.toText()),
+                        remainingRawJoinedStrings(COMMAND_ARG.toText()))
+                .executor(BeforeCommand())
+                .build()
+
+        val executeAfterCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.after")
+                .arguments(
+                        string(TIMESTAMP_ARG.toText()),
+                        remainingRawJoinedStrings(COMMAND_ARG.toText()))
+                .executor(AfterCommand())
+                .build()
+
         Sponge.getCommandManager().register(this, CommandSpec.builder()
                 .child(CommandSpec.builder()
-                        .permission("$ROOT_PERMISSION.execute-when-online")
-                        .arguments(
-                                firstParsing(
-                                        uuid(PLAYER_UUID_ARG.toText()),
-                                        user(PLAYER_NAME_ARG.toText())),
-                                remainingRawJoinedStrings(COMMAND_ARG.toText()))
-                        .executor(ExecuteWhenOnlineCommand())
-                        .build(), "executeWhenOnline")
-                .child(CommandSpec.builder()
-                        .permission("$ROOT_PERMISSION.delay")
-                        .arguments(
-                                string(DELAY_ARG.toText()),
-                                remainingJoinedStrings(COMMAND_ARG.toText()))
-                        .executor(DelayCommand())
-                        .build(), "delay")
+                        .child(executeWhenOnlineCommandSpec, "whenOnline")
+                        .child(executeDelayCommandSpec, "delay")
+                        .child(executeBeforeCommandSpec, "before")
+                        .child(executeAfterCommandSpec, "after")
+                        .build(), "execute")
+
+                .child(executeDelayCommandSpec, "delay") // legacy
+                .child(executeWhenOnlineCommandSpec, "executeWhenOnline") // legacy
+
                 .build(), "commandutils", "cmdutils", "cu")
     }
 
