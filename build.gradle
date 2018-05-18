@@ -1,6 +1,6 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.2.10"
-    id "org.jetbrains.kotlin.kapt" version "1.2.10"
+    id "org.jetbrains.kotlin.jvm" version "1.2.41"
+    id "org.jetbrains.kotlin.kapt" version "1.2.41"
     id "com.github.johnrengelman.shadow" version "1.2.4"
     id "flavor.pie.promptsign" version "1.0.2"
 }
@@ -12,6 +12,7 @@ repositories {
     jcenter()
     maven { url "https://repo.spongepowered.org/maven/" }
     maven { url "https://jitpack.io" }
+    maven { url "http://repo.bstats.org/content/repositories/releases" }
 }
 
 configurations {
@@ -20,11 +21,11 @@ configurations {
 }
 
 dependencies {
-    shadow "org.jetbrains.kotlin:kotlin-stdlib-jre8:1.2.10"
-    kapt "org.spongepowered:spongeapi:5.1.0"
-    shadow("com.github.randombyte-developer.kosp:kosp:v0.5.4.1") { transitive = false }
-    //compile "com.github.rojo8399:PlaceholderAPI:4.4"
-    compile files("run/vanilla/mods/PlaceholderAPI-4.5.jar")
+    shadow "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.41"
+    kapt "org.spongepowered:spongeapi:7.0.0"
+    shadow("com.github.randombyte-developer.kosp:kosp:v1.9.2") { transitive = false }
+    shadow "org.bstats:bstats-sponge:1.2"
+    compile "com.github.rojo8399:PlaceholderAPI:065a3e43512426428ad185c044b5d610ce6814bd" // 4.5
 }
 
 jar.enabled = false

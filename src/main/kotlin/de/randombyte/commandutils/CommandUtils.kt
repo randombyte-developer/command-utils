@@ -7,26 +7,22 @@ import de.randombyte.commandutils.CommandUtils.Companion.NAME
 import de.randombyte.commandutils.CommandUtils.Companion.PLACEHOLDER_API_ID
 import de.randombyte.commandutils.CommandUtils.Companion.VERSION
 import de.randombyte.commandutils.alias.CommandListener
+import de.randombyte.commandutils.config.ConfigAccessor
+import de.randombyte.commandutils.config.ConfigUpdater
 import de.randombyte.commandutils.delay.DelayCommand
 import de.randombyte.commandutils.executeonserverstartup.ServerStartupListener
 import de.randombyte.commandutils.executewhenonline.ExecuteWhenOnlineCommand
 import de.randombyte.commandutils.executewhenonline.PlayerJoinListener
 import de.randombyte.commandutils.service.CommandUtilsService
 import de.randombyte.commandutils.service.CommandUtilsServiceImpl
-import de.randombyte.kosp.bstats.BStats
-import de.randombyte.kosp.config.ConfigManager
 import de.randombyte.kosp.extensions.toText
 import de.randombyte.kosp.getServiceOrFail
 import me.rojo8399.placeholderapi.PlaceholderService
-import ninja.leaping.configurate.commented.CommentedConfigurationNode
-import ninja.leaping.configurate.loader.ConfigurationLoader
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
-import org.spongepowered.api.command.args.GenericArguments
-import org.spongepowered.api.command.args.GenericArguments.remainingRawJoinedStrings
-import org.spongepowered.api.command.args.GenericArguments.string
+import org.spongepowered.api.command.args.GenericArguments.*
 import org.spongepowered.api.command.spec.CommandSpec
-import org.spongepowered.api.config.DefaultConfig
+import org.spongepowered.api.config.ConfigDir
 import org.spongepowered.api.event.Listener
 import org.spongepowered.api.event.game.GameReloadEvent
 import org.spongepowered.api.event.game.state.GameInitializationEvent
@@ -34,6 +30,7 @@ import org.spongepowered.api.event.game.state.GamePostInitializationEvent
 import org.spongepowered.api.plugin.Dependency
 import org.spongepowered.api.plugin.Plugin
 import org.spongepowered.api.plugin.PluginContainer
+import java.nio.file.Path
 
 @Plugin(id = ID,
         name = NAME,
@@ -42,8 +39,8 @@ import org.spongepowered.api.plugin.PluginContainer
         dependencies = [(Dependency(id = PLACEHOLDER_API_ID, optional = true))])
 class CommandUtils @Inject constructor(
         val logger: Logger,
-        @DefaultConfig(sharedRoot = true) configurationLoader: ConfigurationLoader<CommentedConfigurationNode>,
-        val bStats: BStats,
+        @ConfigDir(sharedRoot = false) configPath: Path,
+        //val bStats: Metrics,
         val pluginContainer: PluginContainer
 ) {
     companion object {
@@ -56,82 +53,66 @@ class CommandUtils @Inject constructor(
 
         const val ROOT_PERMISSION = ID
 
-        const val PLAYER_OR_UUID_ARG = "playerOrUuid"
+        const val PLAYER_NAME_ARG = "player_name"
+        const val PLAYER_UUID_ARG = "player_uuid"
         const val COMMAND_ARG = "command"
 
-        const val DELAY_ARGUMENT = "delay"
+        const val DELAY_ARG = "delay"
+
+        private val LAZY_INSTANCE = lazy { Sponge.getPluginManager().getPlugin(ID).get().instance.get() as CommandUtils }
+        val INSTANCE: CommandUtils
+            get() = LAZY_INSTANCE.value
     }
 
-    private var placeholderApi: PlaceholderService? = null
+    var placeholderApi: PlaceholderService? = null
 
-    private val configManager = ConfigManager(
-            configLoader = configurationLoader,
-            clazz = Config::class.java,
-            hyphenSeparatedKeys = true,
-            simpleDateSerialization = true,
-            simpleDurationSerialization = true
-    )
-
-    private lateinit var config: Config
-
-    private val configAccessor = object : ConfigAccessor {
-        override fun get() = this@CommandUtils.config
-        override fun save(newConfig: Config) {
-            this@CommandUtils.config = newConfig
-            saveConfig()
-        }
-    }
+    val configAccessor = ConfigAccessor(configPath)
 
     @Listener
     fun onInit(event: GameInitializationEvent) {
         loadPlaceholderApi()
-        reloadConfig()
+        ConfigUpdater.from1_8(configAccessor, logger)
+        configAccessor.reloadAll()
         registerCommands()
     }
 
     @Listener
     fun onPostInit(event: GamePostInitializationEvent) {
-        Sponge.getEventManager().registerListeners(this, PlayerJoinListener(this, configAccessor))
-        Sponge.getEventManager().registerListeners(this, ServerStartupListener(this, configAccessor))
-        Sponge.getEventManager().registerListeners(this, CommandListener(logger, configAccessor, { placeholderApi }))
+        Sponge.getEventManager().registerListeners(this, PlayerJoinListener())
+        Sponge.getEventManager().registerListeners(this, ServerStartupListener())
+        Sponge.getEventManager().registerListeners(this, CommandListener())
 
-        Sponge.getServiceManager().setProvider(this, CommandUtilsService::class.java,
-                CommandUtilsServiceImpl(configAccessor))
+        Sponge.getServiceManager().setProvider(this, CommandUtilsService::class.java, CommandUtilsServiceImpl(configAccessor))
 
         logger.info("Loaded $NAME: $VERSION")
     }
 
     @Listener
     fun onReload(event: GameReloadEvent) {
-        reloadConfig()
+        configAccessor.reloadAll()
 
         logger.info("Reloaded!")
-    }
-
-    private fun reloadConfig() {
-        config = configManager.get()
-        saveConfig() // generate config
-    }
-
-    private fun saveConfig() {
-        configManager.save(config)
     }
 
     private fun registerCommands() {
         Sponge.getCommandManager().register(this, CommandSpec.builder()
                 .child(CommandSpec.builder()
                         .permission("$ROOT_PERMISSION.execute-when-online")
-                        .arguments(string(PLAYER_OR_UUID_ARG.toText()), remainingRawJoinedStrings(COMMAND_ARG.toText()))
+                        .arguments(
+                                firstParsing(
+                                        uuid(PLAYER_UUID_ARG.toText()),
+                                        user(PLAYER_NAME_ARG.toText())),
+                                remainingRawJoinedStrings(COMMAND_ARG.toText()))
                         .executor(ExecuteWhenOnlineCommand())
                         .build(), "executeWhenOnline")
                 .child(CommandSpec.builder()
                         .permission("$ROOT_PERMISSION.delay")
                         .arguments(
-                                string(DELAY_ARGUMENT.toText()),
-                                GenericArguments.remainingJoinedStrings(COMMAND_ARG.toText()))
-                        .executor(DelayCommand(plugin = this))
+                                string(DELAY_ARG.toText()),
+                                remainingJoinedStrings(COMMAND_ARG.toText()))
+                        .executor(DelayCommand())
                         .build(), "delay")
-                .build(), "commandUtils", "cmdUtils", "cu")
+                .build(), "commandutils", "cmdutils", "cu")
     }
 
     private fun loadPlaceholderApi() {

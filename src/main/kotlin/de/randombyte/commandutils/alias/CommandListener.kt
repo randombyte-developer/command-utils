@@ -1,14 +1,10 @@
 package de.randombyte.commandutils.alias
 
-import de.randombyte.commandutils.ConfigAccessor
-import de.randombyte.commandutils.execute
-import de.randombyte.commandutils.executeForPlayer
-import de.randombyte.commandutils.process
+import de.randombyte.commandutils.CommandUtils
+import de.randombyte.commandutils.executeCommand
 import de.randombyte.kosp.config.serializers.duration.SimpleDurationTypeSerializer
 import de.randombyte.kosp.extensions.red
 import de.randombyte.kosp.extensions.toText
-import me.rojo8399.placeholderapi.PlaceholderService
-import org.slf4j.Logger
 import org.spongepowered.api.command.CommandSource
 import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.event.Listener
@@ -17,17 +13,16 @@ import org.spongepowered.api.event.filter.cause.First
 import java.time.Instant
 import java.util.*
 
-class CommandListener(
-        val logger: Logger,
-        val configAccessor: ConfigAccessor,
-        val getPlaceholderService: () -> PlaceholderService?
-) {
+class CommandListener {
     @Listener
     fun onCommand(event: SendCommandEvent, @First commandSource: CommandSource) {
-        val config = configAccessor.get()
+        val commandUtils = CommandUtils.INSTANCE
+        val configAccessor = commandUtils.configAccessor
+        val aliaseConfig = configAccessor.aliases.get()
+        val lastExecConfig = configAccessor.lastAliasExecutions.get()
 
         val wholeCommand = event.wholeCommand
-        val matchedAliasedMap = config.alias.aliases.mapNotNull { (alias, aliasConfig) ->
+        val matchedAliasedMap = aliaseConfig.aliases.mapNotNull { (alias, aliasConfig) ->
             (alias to aliasConfig) to (AliasParser.parse(alias, wholeCommand) ?: return@mapNotNull null)
         }.toList()
 
@@ -37,7 +32,7 @@ class CommandListener(
 
         if (matchedAliasedMap.size > 1) {
             val matchedAliasesString = matchedAliasedMap.joinToString(separator = ", ", prefix = "[", postfix = "]", transform = { "'${it.first.first}'" })
-            logger.error("More than one alias matched! command: '$wholeCommand'; matched aliases: $matchedAliasesString")
+            commandUtils.logger.error("More than one alias matched! command: '$wholeCommand'; matched aliases: $matchedAliasesString")
             throw IllegalArgumentException("More than one alias matched, report to admin!")
         }
 
@@ -49,9 +44,9 @@ class CommandListener(
         }
 
         if (aliasConfig.cooldown != null && commandSource is Player) {
-            val lastExecution = config.lastAliasExecutionsConfig.get(commandSource.uniqueId, alias)
+            val lastExecution = lastExecConfig.get(commandSource.uniqueId, alias)
             if (lastExecution != null) {
-                val remainingCooldown = config.lastAliasExecutionsConfig.remainingCooldown(lastExecution, aliasConfig.cooldown)
+                val remainingCooldown = lastExecConfig.remainingCooldown(lastExecution, aliasConfig.cooldown)
                 if (!remainingCooldown.isNegative) {
                     val cooldownString = SimpleDurationTypeSerializer.serialize(remainingCooldown, outputMilliseconds = false)
                     commandSource.sendMessage("The cooldown for this command is still up! Wait another $cooldownString.".red())
@@ -59,21 +54,17 @@ class CommandListener(
                 }
             }
 
-            val newLastExecutionsConfig = config.lastAliasExecutionsConfig.add(commandSource.uniqueId, alias, Date.from(Instant.now()))
-            configAccessor.save(config.copy(lastAliasExecutionsConfig = newLastExecutionsConfig))
+            val newLastExecutionsConfig = lastExecConfig.add(commandSource.uniqueId, alias, Date.from(Instant.now()))
+            configAccessor.lastAliasExecutions.save(newLastExecutionsConfig)
         }
 
-        aliasConfig.commands.forEach {
-            var modifiedWholeCommand = it
-            arguments.forEach { (parameter, argument) -> modifiedWholeCommand = modifiedWholeCommand.replace(parameter, argument) }
-            if (commandSource is Player) {
-                val placeholderService = getPlaceholderService()
-                if (placeholderService != null) {
-                    modifiedWholeCommand = modifiedWholeCommand.process(placeholderService, commandSource)
-                }
-                executeForPlayer(modifiedWholeCommand, commandSource)
-            }
-            else execute(modifiedWholeCommand, commandSource)
+        aliasConfig.commands.forEach { command ->
+            val replacements = if (commandSource is Player) {
+                // adding the legacy '$p'
+                arguments + Pair("\$p", commandSource.name)
+            } else arguments
+
+            executeCommand(command, commandSource, replacements)
         }
     }
 
