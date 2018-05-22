@@ -4,6 +4,7 @@ import de.randombyte.kosp.extensions.executeCommand
 import de.randombyte.kosp.extensions.replace
 import me.rojo8399.placeholderapi.PlaceholderService
 import org.spongepowered.api.Sponge
+import org.spongepowered.api.command.CommandResult
 import org.spongepowered.api.command.CommandSource
 import org.spongepowered.api.text.Text
 import org.spongepowered.api.text.serializer.TextSerializers
@@ -14,7 +15,7 @@ fun executeCommand(
         command: String,
         commandSource: CommandSource,
         replacements: Map<String, String> = emptyMap(),
-        doPlaceholderProcessing: Boolean = true) {
+        doPlaceholderProcessing: Boolean = true): CommandResult {
 
     val unprefixedCommand = command.removePrefix(EXECUTE_AS_CONSOLE_PREFIX)
     val executeAsConsole = command.startsWith(EXECUTE_AS_CONSOLE_PREFIX)
@@ -27,7 +28,7 @@ fun executeCommand(
     val replacedCommand = processedCommand.replace(replacements)
 
     val finalCommandSource = if (executeAsConsole) Sponge.getServer().console else commandSource
-    finalCommandSource.executeCommand(replacedCommand)
+    return finalCommandSource.executeCommand(replacedCommand)
 }
 
 /**

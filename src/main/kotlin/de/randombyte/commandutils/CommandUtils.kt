@@ -9,9 +9,13 @@ import de.randombyte.commandutils.CommandUtils.Companion.VERSION
 import de.randombyte.commandutils.alias.CommandListener
 import de.randombyte.commandutils.config.ConfigAccessor
 import de.randombyte.commandutils.config.ConfigUpdater
-import de.randombyte.commandutils.execute.after.AfterCommand
-import de.randombyte.commandutils.execute.before.BeforeCommand
+import de.randombyte.commandutils.execute.after.IsAfterCommand
+import de.randombyte.commandutils.execute.before.IsBeforeCommand
 import de.randombyte.commandutils.execute.delay.DelayCommand
+import de.randombyte.commandutils.execute.ifcondition.IfCommand
+import de.randombyte.commandutils.execute.money.CostCommand
+import de.randombyte.commandutils.execute.money.HasMoneyCommand
+import de.randombyte.commandutils.execute.userUuidFromNameOrUuid
 import de.randombyte.commandutils.execute.whenonline.ExecuteWhenOnlineCommand
 import de.randombyte.commandutils.execute.whenonline.PlayerJoinListener
 import de.randombyte.commandutils.executeonserverstartup.ServerStartupListener
@@ -57,9 +61,14 @@ class CommandUtils @Inject constructor(
 
         const val PLAYER_NAME_ARG = "player_name"
         const val PLAYER_UUID_ARG = "player_uuid"
+
         const val COMMAND_ARG = "command"
+
         const val DELAY_ARG = "delay"
         const val TIMESTAMP_ARG = "timestamp"
+        const val PRICE_ARG = "price"
+        const val MONEY_ARG = "money"
+        const val CONDITION_COMMAND_ARG = "condition_command"
 
         private val LAZY_INSTANCE = lazy { Sponge.getPluginManager().getPlugin(ID).get().instance.get() as CommandUtils }
         val INSTANCE: CommandUtils
@@ -100,9 +109,7 @@ class CommandUtils @Inject constructor(
         val executeWhenOnlineCommandSpec = CommandSpec.builder()
                 .permission("$ROOT_PERMISSION.execute-when-online")
                 .arguments(
-                        firstParsing(
-                                uuid(PLAYER_UUID_ARG.toText()),
-                                user(PLAYER_NAME_ARG.toText())),
+                        userUuidFromNameOrUuid,
                         remainingRawJoinedStrings(COMMAND_ARG.toText()))
                 .executor(ExecuteWhenOnlineCommand())
                 .build()
@@ -115,28 +122,62 @@ class CommandUtils @Inject constructor(
                 .executor(DelayCommand())
                 .build()
 
-        val executeBeforeCommandSpec = CommandSpec.builder()
+        val isBeforeCommandSpec = CommandSpec.builder()
                 .permission("$ROOT_PERMISSION.before")
-                .arguments(
-                        string(TIMESTAMP_ARG.toText()),
-                        remainingRawJoinedStrings(COMMAND_ARG.toText()))
-                .executor(BeforeCommand())
+                .arguments(string(TIMESTAMP_ARG.toText()))
+                .executor(IsBeforeCommand())
                 .build()
 
-        val executeAfterCommandSpec = CommandSpec.builder()
+        val isAfterCommandSpec = CommandSpec.builder()
                 .permission("$ROOT_PERMISSION.after")
+                .arguments(string(TIMESTAMP_ARG.toText()))
+                .executor(IsAfterCommand())
+                .build()
+
+        val hasMoneyCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.money")
                 .arguments(
-                        string(TIMESTAMP_ARG.toText()),
+                        userUuidFromNameOrUuid,
+                        doubleNum(MONEY_ARG.toText()))
+                .executor(HasMoneyCommand())
+                .build()
+
+        val executeCostCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.cost")
+                .arguments(
+                        userUuidFromNameOrUuid,
+                        doubleNum(PRICE_ARG.toText()),
                         remainingRawJoinedStrings(COMMAND_ARG.toText()))
-                .executor(AfterCommand())
+                .executor(CostCommand())
+                .build()
+
+        val executeIfCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.if")
+                .arguments(
+                        string(CONDITION_COMMAND_ARG.toText()),
+                        allOf(string(COMMAND_ARG.toText())))
+                .executor(IfCommand(inverted = false))
+                .child(CommandSpec.builder()
+                        .arguments(
+                                string(CONDITION_COMMAND_ARG.toText()),
+                                allOf(string(COMMAND_ARG.toText())))
+                        .executor(IfCommand(inverted = true))
+                        .build(), "not")
                 .build()
 
         Sponge.getCommandManager().register(this, CommandSpec.builder()
                 .child(CommandSpec.builder()
+                        .child(isBeforeCommandSpec, "before")
+                        .child(isAfterCommandSpec, "after")
+                        .build(), "is")
+                .child(CommandSpec.builder()
+                        .child(hasMoneyCommandSpec, "money")
+                        .build(), "has")
+                .child(CommandSpec.builder()
                         .child(executeWhenOnlineCommandSpec, "whenOnline")
                         .child(executeDelayCommandSpec, "delay")
-                        .child(executeBeforeCommandSpec, "before")
-                        .child(executeAfterCommandSpec, "after")
+                        .child(executeCostCommandSpec, "cost")
+                        .child(executeIfCommandSpec, "if")
                         .build(), "execute")
 
                 .child(executeDelayCommandSpec, "delay") // legacy
