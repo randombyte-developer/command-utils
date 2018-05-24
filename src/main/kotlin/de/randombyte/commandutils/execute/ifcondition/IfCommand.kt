@@ -12,13 +12,14 @@ class IfCommand(val inverted: Boolean) : CommandExecutor {
         val conditionCommand = args.getOne<String>(CommandUtils.CONDITION_COMMAND_ARG).get()
         val commands = args.getAll<String>(CommandUtils.COMMAND_ARG)
 
-        val commandResult = executeCommand(conditionCommand, src)
-        var truthy = commandResult.successCount.isPresent // CommandResult.EMPTY.successCount is absent
+        executeCommand(conditionCommand, src) { commandResult -> // workaround for https://github.com/SpongePowered/SpongeCommon/issues/1922
+            var truthy = commandResult.successCount.isPresent // CommandResult.EMPTY.successCount is absent
 
-        if (inverted) truthy = !truthy
+            if (inverted) truthy = !truthy
 
-        if (truthy) {
-            commands.forEach { executeCommand(it, src) }
+            if (truthy) {
+                commands.forEach { executeCommand(it, src) }
+            }
         }
 
         return CommandResult.success()

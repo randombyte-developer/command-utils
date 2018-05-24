@@ -6,6 +6,7 @@ import me.rojo8399.placeholderapi.PlaceholderService
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.CommandResult
 import org.spongepowered.api.command.CommandSource
+import org.spongepowered.api.scheduler.Task
 import org.spongepowered.api.text.Text
 import org.spongepowered.api.text.serializer.TextSerializers
 
@@ -15,7 +16,8 @@ fun executeCommand(
         command: String,
         commandSource: CommandSource,
         replacements: Map<String, String> = emptyMap(),
-        doPlaceholderProcessing: Boolean = true): CommandResult {
+        doPlaceholderProcessing: Boolean = true,
+        commandResultCallback: (CommandResult) -> Unit = { }) {
 
     val unprefixedCommand = command.removePrefix(EXECUTE_AS_CONSOLE_PREFIX)
     val executeAsConsole = command.startsWith(EXECUTE_AS_CONSOLE_PREFIX)
@@ -28,7 +30,14 @@ fun executeCommand(
     val replacedCommand = processedCommand.replace(replacements)
 
     val finalCommandSource = if (executeAsConsole) Sponge.getServer().console else commandSource
-    return finalCommandSource.executeCommand(replacedCommand)
+
+    Task.builder()
+            .execute { ->
+                val commandResult = finalCommandSource.executeCommand(replacedCommand)
+                commandResultCallback(commandResult)
+            }
+            .delayTicks(1)
+            .submit(CommandUtils.INSTANCE)
 }
 
 /**
