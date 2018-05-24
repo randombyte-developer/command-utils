@@ -15,6 +15,7 @@ private const val EXECUTE_AS_CONSOLE_PREFIX = "*"
 fun executeCommand(
         command: String,
         commandSource: CommandSource,
+        target: Any = commandSource,
         replacements: Map<String, String> = emptyMap(),
         doPlaceholderProcessing: Boolean = true,
         commandResultCallback: (CommandResult) -> Unit = { }) {
@@ -23,7 +24,7 @@ fun executeCommand(
     val executeAsConsole = command.startsWith(EXECUTE_AS_CONSOLE_PREFIX)
 
     val processedCommand = if (doPlaceholderProcessing) {
-        unprefixedCommand.tryProcessPlaceholders(CommandUtils.INSTANCE.placeholderApi, commandSource)
+        unprefixedCommand.tryProcessPlaceholders(CommandUtils.INSTANCE.placeholderApi, target)
     } else unprefixedCommand
 
     // Any additional custom replacements(like the alias arguments, or the legacy '$p')
@@ -43,7 +44,7 @@ fun executeCommand(
 /**
  * Tries to process the placeholders if PlaceholderAPI is loaded.
  */
-private fun String.tryProcessPlaceholders(placeholderApi: PlaceholderService?, commandSource: CommandSource): String {
+private fun String.tryProcessPlaceholders(placeholderApi: PlaceholderService?, commandSource: Any): String {
     if (placeholderApi == null) return this
 
     val placeholders = placeholderApi.defaultPattern.toRegex()

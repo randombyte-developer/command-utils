@@ -1,4 +1,4 @@
-package de.randombyte.commandutils.execute.before
+package de.randombyte.commandutils.conditions
 
 import de.randombyte.commandutils.CommandUtils
 import de.randombyte.commandutils.execute.TimeStampUtils

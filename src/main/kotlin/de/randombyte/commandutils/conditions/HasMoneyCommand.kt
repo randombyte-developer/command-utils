@@ -1,4 +1,4 @@
-package de.randombyte.commandutils.execute.money
+package de.randombyte.commandutils.conditions
 
 import de.randombyte.commandutils.CommandUtils
 import de.randombyte.commandutils.execute.getUserUuid

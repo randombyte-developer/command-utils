@@ -7,14 +7,15 @@ import de.randombyte.commandutils.CommandUtils.Companion.NAME
 import de.randombyte.commandutils.CommandUtils.Companion.PLACEHOLDER_API_ID
 import de.randombyte.commandutils.CommandUtils.Companion.VERSION
 import de.randombyte.commandutils.alias.CommandListener
+import de.randombyte.commandutils.conditions.HasMoneyCommand
+import de.randombyte.commandutils.conditions.IsAfterCommand
+import de.randombyte.commandutils.conditions.IsBeforeCommand
 import de.randombyte.commandutils.config.ConfigAccessor
 import de.randombyte.commandutils.config.ConfigUpdater
-import de.randombyte.commandutils.execute.after.IsAfterCommand
-import de.randombyte.commandutils.execute.before.IsBeforeCommand
 import de.randombyte.commandutils.execute.delay.DelayCommand
 import de.randombyte.commandutils.execute.ifcondition.IfCommand
 import de.randombyte.commandutils.execute.money.CostCommand
-import de.randombyte.commandutils.execute.money.HasMoneyCommand
+import de.randombyte.commandutils.execute.parse.ParseCommand
 import de.randombyte.commandutils.execute.userUuidFromNameOrUuid
 import de.randombyte.commandutils.execute.whenonline.ExecuteWhenOnlineCommand
 import de.randombyte.commandutils.execute.whenonline.PlayerJoinListener
@@ -24,6 +25,7 @@ import de.randombyte.commandutils.service.CommandUtilsServiceImpl
 import de.randombyte.kosp.extensions.toText
 import de.randombyte.kosp.getServiceOrFail
 import me.rojo8399.placeholderapi.PlaceholderService
+import org.bstats.sponge.Metrics
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.args.GenericArguments.*
@@ -46,13 +48,13 @@ import java.nio.file.Path
 class CommandUtils @Inject constructor(
         val logger: Logger,
         @ConfigDir(sharedRoot = false) configPath: Path,
-        //val bStats: Metrics,
+        val bStats: Metrics,
         val pluginContainer: PluginContainer
 ) {
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "1.8"
+        const val VERSION = "2.0"
         const val AUTHOR = "RandomByte"
 
         const val PLACEHOLDER_API_ID = "placeholderapi"
@@ -151,6 +153,14 @@ class CommandUtils @Inject constructor(
                 .executor(CostCommand())
                 .build()
 
+        val executeParsedCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.parse")
+                .arguments(
+                        userUuidFromNameOrUuid,
+                        remainingRawJoinedStrings(COMMAND_ARG.toText()))
+                .executor(ParseCommand())
+                .build()
+
         val executeIfCommandSpec = CommandSpec.builder()
                 .permission("$ROOT_PERMISSION.if")
                 .arguments(
@@ -175,9 +185,10 @@ class CommandUtils @Inject constructor(
                         .build(), "has")
                 .child(CommandSpec.builder()
                         .child(executeWhenOnlineCommandSpec, "whenOnline")
-                        .child(executeDelayCommandSpec, "delay")
+                        .child(executeDelayCommandSpec, "delayed")
                         .child(executeCostCommandSpec, "cost")
                         .child(executeIfCommandSpec, "if")
+                        .child(executeParsedCommandSpec, "parsed")
                         .build(), "execute")
 
                 .child(executeDelayCommandSpec, "delay") // legacy
