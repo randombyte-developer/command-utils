@@ -25,6 +25,7 @@ import de.randombyte.commandutils.service.CommandUtilsServiceImpl
 import de.randombyte.kosp.extensions.toText
 import de.randombyte.kosp.getServiceOrFail
 import me.rojo8399.placeholderapi.PlaceholderService
+import org.bstats.sponge.Metrics
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.args.GenericArguments.*
@@ -47,7 +48,7 @@ import java.nio.file.Path
 class CommandUtils @Inject constructor(
         val logger: Logger,
         @ConfigDir(sharedRoot = false) configPath: Path,
-//        val bStats: Metrics,
+        val bStats: Metrics,
         val pluginContainer: PluginContainer
 ) {
     companion object {
