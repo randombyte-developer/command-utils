@@ -1,4 +1,4 @@
-package de.randombyte.commandutils.execute.money
+package de.randombyte.commandutils.conditions
 
 import de.randombyte.commandutils.CommandUtils
 import de.randombyte.commandutils.execute.getUserUuid
@@ -15,7 +15,7 @@ import org.spongepowered.api.service.economy.EconomyService
 import org.spongepowered.api.service.economy.transaction.ResultType
 import java.math.BigDecimal
 
-class CostCommand : CommandExecutor {
+class HasPayedCommand : CommandExecutor {
     override fun execute(src: CommandSource, args: CommandContext): CommandResult {
         val playerUuid = args.getUserUuid()
         val price = args.getOne<Double>(CommandUtils.PRICE_ARG).get()

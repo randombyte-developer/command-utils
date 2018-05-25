@@ -8,13 +8,13 @@ import de.randombyte.commandutils.CommandUtils.Companion.PLACEHOLDER_API_ID
 import de.randombyte.commandutils.CommandUtils.Companion.VERSION
 import de.randombyte.commandutils.alias.CommandListener
 import de.randombyte.commandutils.conditions.HasMoneyCommand
+import de.randombyte.commandutils.conditions.HasPayedCommand
 import de.randombyte.commandutils.conditions.IsAfterCommand
 import de.randombyte.commandutils.conditions.IsBeforeCommand
 import de.randombyte.commandutils.config.ConfigAccessor
 import de.randombyte.commandutils.config.ConfigUpdater
 import de.randombyte.commandutils.execute.delay.DelayCommand
 import de.randombyte.commandutils.execute.ifcondition.IfCommand
-import de.randombyte.commandutils.execute.money.CostCommand
 import de.randombyte.commandutils.execute.parse.ParseCommand
 import de.randombyte.commandutils.execute.userUuidFromNameOrUuid
 import de.randombyte.commandutils.execute.whenonline.ExecuteWhenOnlineCommand
@@ -25,7 +25,6 @@ import de.randombyte.commandutils.service.CommandUtilsServiceImpl
 import de.randombyte.kosp.extensions.toText
 import de.randombyte.kosp.getServiceOrFail
 import me.rojo8399.placeholderapi.PlaceholderService
-import org.bstats.sponge.Metrics
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.args.GenericArguments.*
@@ -48,7 +47,7 @@ import java.nio.file.Path
 class CommandUtils @Inject constructor(
         val logger: Logger,
         @ConfigDir(sharedRoot = false) configPath: Path,
-        val bStats: Metrics,
+//        val bStats: Metrics,
         val pluginContainer: PluginContainer
 ) {
     companion object {
@@ -144,17 +143,16 @@ class CommandUtils @Inject constructor(
                 .executor(HasMoneyCommand())
                 .build()
 
-        val executeCostCommandSpec = CommandSpec.builder()
-                .permission("$ROOT_PERMISSION.cost")
+        val hasPayedCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.payed")
                 .arguments(
                         userUuidFromNameOrUuid,
-                        doubleNum(PRICE_ARG.toText()),
-                        remainingRawJoinedStrings(COMMAND_ARG.toText()))
-                .executor(CostCommand())
+                        doubleNum(PRICE_ARG.toText()))
+                .executor(HasPayedCommand())
                 .build()
 
         val executeParsedCommandSpec = CommandSpec.builder()
-                .permission("$ROOT_PERMISSION.parse")
+                .permission("$ROOT_PERMISSION.parsed")
                 .arguments(
                         userUuidFromNameOrUuid,
                         remainingRawJoinedStrings(COMMAND_ARG.toText()))
@@ -182,11 +180,11 @@ class CommandUtils @Inject constructor(
                         .build(), "is")
                 .child(CommandSpec.builder()
                         .child(hasMoneyCommandSpec, "money")
-                        .build(), "has")
+                        .child(hasPayedCommandSpec, "payed")
+                .build(), "has")
                 .child(CommandSpec.builder()
                         .child(executeWhenOnlineCommandSpec, "whenOnline")
                         .child(executeDelayCommandSpec, "delayed")
-                        .child(executeCostCommandSpec, "cost")
                         .child(executeIfCommandSpec, "if")
                         .child(executeParsedCommandSpec, "parsed")
                         .build(), "execute")
