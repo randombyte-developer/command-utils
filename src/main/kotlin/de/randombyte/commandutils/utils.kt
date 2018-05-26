@@ -15,9 +15,9 @@ private const val EXECUTE_AS_CONSOLE_PREFIX = "*"
 fun executeCommand(
         command: String,
         commandSource: CommandSource,
-        target: Any = commandSource,
         replacements: Map<String, String> = emptyMap(),
         doPlaceholderProcessing: Boolean = true,
+        target: Any = commandSource,
         commandResultCallback: (CommandResult) -> Unit = { }) {
 
     val unprefixedCommand = command.removePrefix(EXECUTE_AS_CONSOLE_PREFIX)
