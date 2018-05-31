@@ -2,6 +2,7 @@ package de.randombyte.commandutils
 
 import de.randombyte.kosp.extensions.executeCommand
 import de.randombyte.kosp.extensions.replace
+import de.randombyte.kosp.getServiceOrFail
 import me.rojo8399.placeholderapi.PlaceholderService
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.CommandResult
@@ -24,7 +25,11 @@ fun executeCommand(
     val executeAsConsole = command.startsWith(EXECUTE_AS_CONSOLE_PREFIX)
 
     val processedCommand = if (doPlaceholderProcessing) {
-        unprefixedCommand.tryProcessPlaceholders(CommandUtils.INSTANCE.placeholderApi, target)
+        if (Sponge.getPluginManager().getPlugin(CommandUtils.PLACEHOLDER_API_ID).isPresent) {
+            val placeholderApi = getServiceOrFail(PlaceholderService::class,
+                    failMessage = "Failed getting the placeholder API despite the plugin itself being loaded!")
+            unprefixedCommand.tryProcessPlaceholders(placeholderApi, target)
+        } else unprefixedCommand
     } else unprefixedCommand
 
     // Any additional custom replacements(like the alias arguments, or the legacy '$p')

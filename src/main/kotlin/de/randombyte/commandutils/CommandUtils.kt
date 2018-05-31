@@ -23,8 +23,6 @@ import de.randombyte.commandutils.executeonserverstartup.ServerStartupListener
 import de.randombyte.commandutils.service.CommandUtilsService
 import de.randombyte.commandutils.service.CommandUtilsServiceImpl
 import de.randombyte.kosp.extensions.toText
-import de.randombyte.kosp.getServiceOrFail
-import me.rojo8399.placeholderapi.PlaceholderService
 import org.bstats.sponge.Metrics
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
@@ -54,7 +52,7 @@ class CommandUtils @Inject constructor(
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "2.0"
+        const val VERSION = "2.0.5"
         const val AUTHOR = "RandomByte"
 
         const val PLACEHOLDER_API_ID = "placeholderapi"
@@ -77,13 +75,10 @@ class CommandUtils @Inject constructor(
             get() = LAZY_INSTANCE.value
     }
 
-    var placeholderApi: PlaceholderService? = null
-
     val configAccessor = ConfigAccessor(configPath)
 
     @Listener
     fun onInit(event: GameInitializationEvent) {
-        loadPlaceholderApi()
         ConfigUpdater.from1_8(configAccessor, logger)
         configAccessor.reloadAll()
         registerCommands()
@@ -194,12 +189,5 @@ class CommandUtils @Inject constructor(
                 .child(executeWhenOnlineCommandSpec, "executeWhenOnline") // legacy
 
                 .build(), "commandutils", "cmdutils", "cu")
-    }
-
-    private fun loadPlaceholderApi() {
-        if (Sponge.getPluginManager().getPlugin(PLACEHOLDER_API_ID).isPresent) {
-            placeholderApi = getServiceOrFail(PlaceholderService::class,
-                    failMessage = "Failed getting the placeholder API despite the plugin itself being loaded!")
-        }
     }
 }
