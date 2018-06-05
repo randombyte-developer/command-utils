@@ -55,8 +55,8 @@ private fun String.tryProcessPlaceholders(placeholderApi: PlaceholderService?, c
     val placeholders = placeholderApi.defaultPattern.toRegex()
             .findAll(this)
             .map { matchResult -> matchResult.groupValues[1] }.toList()
-    val replacements = placeholders.map { placeholder ->
-        val replacement = placeholderApi.parse(placeholder, commandSource, null)
+    val replacements = placeholders.mapNotNull { placeholder ->
+        val replacement = placeholderApi.parse(placeholder, commandSource, null) ?: return@mapNotNull null
         val replacementString = if (replacement is Text) {
             TextSerializers.FORMATTING_CODE.serialize(replacement)
         } else {
