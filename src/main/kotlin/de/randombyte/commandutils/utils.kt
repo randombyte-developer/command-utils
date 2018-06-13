@@ -20,16 +20,24 @@ fun executeCommand(
     val unprefixedCommand = command.removePrefix(EXECUTE_AS_CONSOLE_PREFIX)
     val executeAsConsole = command.startsWith(EXECUTE_AS_CONSOLE_PREFIX)
 
-    val processedCommand = unprefixedCommand.tryReplacePlaceholders(source = target)
-
     // Any additional custom replacements(like the alias arguments, or the legacy '$p')
-    val replacedCommand = processedCommand.replace(replacements)
+    val replacedCommand = unprefixedCommand.replace(replacements)
+
+    // cu execute parsed
+    val splits = replacedCommand.split(" ")
+    val processedCommand = if (splits[1] == "execute" && splits[2] == "parsed") {
+        // This command doesn't need external placeholder processing, it is done in the command itself
+        replacedCommand
+    } else {
+        // No internal placeholder parsing will done, so we do it here
+        replacedCommand.tryReplacePlaceholders(source = target)
+    }
 
     val finalCommandSource = if (executeAsConsole) Sponge.getServer().console else commandSource
 
     Task.builder()
             .execute { ->
-                val commandResult = finalCommandSource.executeCommand(replacedCommand)
+                val commandResult = finalCommandSource.executeCommand(processedCommand)
                 commandResultCallback(commandResult)
             }
             .delayTicks(1)
