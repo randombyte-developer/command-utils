@@ -28,7 +28,10 @@ class DelayCommand : CommandExecutor {
 
         Task.builder()
                 .delay(delayMilliseconds, TimeUnit.MILLISECONDS)
-                .execute { -> executeCommand(command, src) }
+                .execute { -> executeCommand(
+                        command = command,
+                        commandSource = src
+                ) }
                 .submit(CommandUtils.INSTANCE)
 
         return CommandResult.success()

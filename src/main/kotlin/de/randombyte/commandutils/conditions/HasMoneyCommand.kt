@@ -2,8 +2,8 @@ package de.randombyte.commandutils.conditions
 
 import de.randombyte.commandutils.CommandUtils
 import de.randombyte.commandutils.execute.getUserUuid
+import de.randombyte.kosp.extensions.getServiceOrFail
 import de.randombyte.kosp.extensions.toText
-import de.randombyte.kosp.getServiceOrFail
 import org.spongepowered.api.command.CommandException
 import org.spongepowered.api.command.CommandResult
 import org.spongepowered.api.command.CommandSource
@@ -20,16 +20,11 @@ class HasMoneyCommand : CommandExecutor {
             throw CommandException("'money' must be greater than 0.0!".toText())
         }
 
-        val economyService = getServiceOrFail(EconomyService::class)
+        val economyService = EconomyService::class.getServiceOrFail()
         val balance = economyService
                 .getOrCreateAccount(playerUuid).get()
                 .getBalance(economyService.defaultCurrency)
 
-        return if (balance >= money.toBigDecimal()) {
-            CommandResult.success()
-        } else {
-            CommandResult.empty()
-        }
-
+        return (balance >= money.toBigDecimal()).toCommandResult()
     }
 }

@@ -7,10 +7,7 @@ import de.randombyte.commandutils.CommandUtils.Companion.NAME
 import de.randombyte.commandutils.CommandUtils.Companion.PLACEHOLDER_API_ID
 import de.randombyte.commandutils.CommandUtils.Companion.VERSION
 import de.randombyte.commandutils.alias.CommandListener
-import de.randombyte.commandutils.conditions.HasMoneyCommand
-import de.randombyte.commandutils.conditions.HasPayedCommand
-import de.randombyte.commandutils.conditions.IsAfterCommand
-import de.randombyte.commandutils.conditions.IsBeforeCommand
+import de.randombyte.commandutils.conditions.*
 import de.randombyte.commandutils.config.ConfigAccessor
 import de.randombyte.commandutils.config.ConfigUpdater
 import de.randombyte.commandutils.execute.delay.DelayCommand
@@ -29,13 +26,13 @@ import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.args.GenericArguments.*
 import org.spongepowered.api.command.spec.CommandSpec
 import org.spongepowered.api.config.ConfigDir
+import org.spongepowered.api.data.type.HandTypes
 import org.spongepowered.api.event.Listener
 import org.spongepowered.api.event.game.GameReloadEvent
 import org.spongepowered.api.event.game.state.GameInitializationEvent
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent
 import org.spongepowered.api.plugin.Dependency
 import org.spongepowered.api.plugin.Plugin
-import org.spongepowered.api.plugin.PluginContainer
 import java.nio.file.Path
 
 @Plugin(id = ID,
@@ -46,13 +43,12 @@ import java.nio.file.Path
 class CommandUtils @Inject constructor(
         val logger: Logger,
         @ConfigDir(sharedRoot = false) configPath: Path,
-        val bStats: Metrics,
-        val pluginContainer: PluginContainer
+        val bStats: Metrics
 ) {
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "2.1.5"
+        const val VERSION = "2.2.0"
         const val AUTHOR = "RandomByte"
 
         const val PLACEHOLDER_API_ID = "placeholderapi"
@@ -68,6 +64,9 @@ class CommandUtils @Inject constructor(
         const val TIMESTAMP_ARG = "timestamp"
         const val PRICE_ARG = "price"
         const val MONEY_ARG = "money"
+        const val QUANTITY_ARG = "quantity"
+        const val PERMISSION_ARG = "permission"
+        const val ITEM_ARG = "item"
         const val CONDITION_COMMAND_ARG = "condition_command"
 
         private val LAZY_INSTANCE = lazy { Sponge.getPluginManager().getPlugin(ID).get().instance.get() as CommandUtils }
@@ -147,6 +146,32 @@ class CommandUtils @Inject constructor(
                 .executor(HasPayedCommand())
                 .build()
 
+        val hasPermissionCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.permission")
+                .arguments(
+                        userUuidFromNameOrUuid,
+                        string(PERMISSION_ARG.toText()))
+                .executor(HasPermissionCommand())
+                .build()
+
+        val hasInHandCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.in-hand")
+                .arguments(
+                        userUuidFromNameOrUuid,
+                        string(ITEM_ARG.toText()),
+                        optional(integer(QUANTITY_ARG.toText())))
+                .executor(HasInHandCommand(HandTypes.MAIN_HAND))
+                .build()
+
+        val hasGivenFromHandCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.given-from-hand")
+                .arguments(
+                        userUuidFromNameOrUuid,
+                        string(ITEM_ARG.toText()),
+                        optional(integer(QUANTITY_ARG.toText())))
+                .executor(HasGivenFromHandCommand(HandTypes.MAIN_HAND))
+                .build()
+
         val executeParsedCommandSpec = CommandSpec.builder()
                 .permission("$ROOT_PERMISSION.parsed")
                 .arguments(
@@ -177,6 +202,15 @@ class CommandUtils @Inject constructor(
                 .child(CommandSpec.builder()
                         .child(hasMoneyCommandSpec, "money")
                         .child(hasPayedCommandSpec, "payed")
+                        .child(hasPermissionCommandSpec, "permission")
+                        .child(CommandSpec.builder()
+                                .child(hasInHandCommandSpec, "hand")
+                                .build(), "in")
+                        .child(CommandSpec.builder()
+                                .child(CommandSpec.builder()
+                                        .child(hasGivenFromHandCommandSpec, "hand")
+                                        .build(), "from")
+                                .build(), "given")
                 .build(), "has")
                 .child(CommandSpec.builder()
                         .child(executeWhenOnlineCommandSpec, "whenOnline")

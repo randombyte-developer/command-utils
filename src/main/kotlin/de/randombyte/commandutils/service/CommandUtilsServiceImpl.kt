@@ -10,7 +10,11 @@ class CommandUtilsServiceImpl(val configAccessor: ConfigAccessor) : CommandUtils
         val player = playerUuid.getPlayer()
         // shortcut, the player is already online
         if (player != null) {
-            executeCommand(newCommand, player, replacements = mapOf("\$p" to player.name))
+            executeCommand(
+                    command = newCommand,
+                    commandSource = player,
+                    replacements = mapOf("\$p" to player.name)
+            )
             return
         }
 

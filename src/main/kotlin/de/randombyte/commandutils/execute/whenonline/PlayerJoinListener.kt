@@ -25,7 +25,11 @@ class PlayerJoinListener {
                     val currentConfig = commandUtils.configAccessor.executeWhenOnline.get()
 
                     currentConfig.commands[playerUuid]?.forEach { command ->
-                        executeCommand(command, player, replacements = mapOf("\$p" to player.name))
+                        executeCommand(
+                                command = command,
+                                commandSource = player,
+                                replacements = mapOf("\$p" to player.name)
+                        )
                     }
 
                     val newConfig = currentConfig.copy(commands = currentConfig.commands - playerUuid)

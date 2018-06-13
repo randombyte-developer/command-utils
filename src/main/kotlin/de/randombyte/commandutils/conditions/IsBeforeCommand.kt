@@ -12,10 +12,6 @@ class IsBeforeCommand : CommandExecutor {
         val timestamp = args.getOne<String>(CommandUtils.TIMESTAMP_ARG).get()
         val date = TimeStampUtils.deserialize(timestamp)
 
-        return if (TimeStampUtils.now().before(date)) {
-            CommandResult.success()
-        } else {
-            CommandResult.empty()
-        }
+        return TimeStampUtils.now().before(date).toCommandResult()
     }
 }

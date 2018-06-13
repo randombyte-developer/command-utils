@@ -16,7 +16,11 @@ class ParseCommand : CommandExecutor {
 
         val target = if (user.isOnline) user.player.get() else user
 
-        executeCommand(command, commandSource = src, target = target, doPlaceholderProcessing = true)
+        executeCommand(
+                command = command,
+                commandSource = src,
+                target = target
+        )
 
         return CommandResult.success()
     }

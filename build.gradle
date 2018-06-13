@@ -1,12 +1,28 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2"
+        }
+    }
+    dependencies {
+        classpath "gradle.plugin.flavor.pie:promptsign:1.0.2"
+    }
+}
+
 plugins {
     id "org.jetbrains.kotlin.jvm" version "1.2.41"
     id "org.jetbrains.kotlin.kapt" version "1.2.41"
     id "com.github.johnrengelman.shadow" version "1.2.4"
-    id "flavor.pie.promptsign" version "1.0.2"
+}
+
+def isJitpack = System.getenv("JITPACK") != null
+
+if (!isJitpack) {
+    apply plugin: "flavor.pie.promptsign"
 }
 
 group "de.randombyte"
-version "2.1.5"
+version "2.2.0"
 
 repositories {
     jcenter()
@@ -23,9 +39,8 @@ configurations {
 dependencies {
     shadow "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.41"
     kapt "org.spongepowered:spongeapi:7.0.0"
-    shadow("com.github.randombyte-developer.kosp:kosp:v1.9.2") { transitive = false }
+    shadow("com.github.randombyte-developer.kosp:kosp:v2.2.2") { transitive = false }
     shadow "org.bstats:bstats-sponge:1.2"
-    compile "com.github.rojo8399:PlaceholderAPI:065a3e43512426428ad185c044b5d610ce6814bd" // 4.5
 }
 
 jar.enabled = false
@@ -40,7 +55,9 @@ shadowJar {
     classifier = null // Remove '-all' suffix from output file name
 }
 build.dependsOn shadowJar
-signArchives.dependsOn shadowJar
+if (!isJitpack) {
+    signArchives.dependsOn shadowJar
+}
 
 compileKotlin {
     kotlinOptions {

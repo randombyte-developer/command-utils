@@ -64,7 +64,11 @@ class CommandListener {
                 arguments + Pair("\$p", commandSource.name)
             } else arguments
 
-            executeCommand(command, commandSource, replacements)
+            executeCommand(
+                    command = command,
+                    commandSource = commandSource,
+                    replacements = replacements
+            )
         }
     }
 
