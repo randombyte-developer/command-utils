@@ -25,7 +25,10 @@ fun executeCommand(
 
     // cu execute parsed
     val splits = replacedCommand.split(" ")
-    val processedCommand = if (splits[1] == "execute" && splits[2] == "parsed") {
+
+    // commands like "cu execute parsed ..." don't have to be handled now
+    // splits[0] == "cu" || "commandUtils" || "cmdUtils"
+    val processedCommand = if (splits.size >= 3 && splits[1] == "execute" && splits[2] == "parsed") {
         // This command doesn't need external placeholder processing, it is done in the command itself
         replacedCommand
     } else {

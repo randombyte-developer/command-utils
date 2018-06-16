@@ -48,7 +48,7 @@ class CommandUtils @Inject constructor(
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "2.2.1"
+        const val VERSION = "2.2.2"
         const val AUTHOR = "RandomByte"
 
         const val PLACEHOLDER_API_ID = "placeholderapi"
