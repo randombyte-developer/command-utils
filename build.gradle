@@ -10,9 +10,9 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.2.41"
-    id "org.jetbrains.kotlin.kapt" version "1.2.41"
-    id "com.github.johnrengelman.shadow" version "1.2.4"
+    id "org.jetbrains.kotlin.jvm" version "1.2.50"
+    id "org.jetbrains.kotlin.kapt" version "1.2.50"
+    id "com.github.johnrengelman.shadow" version "2.0.4"
 }
 
 def isJitpack = System.getenv("JITPACK") != null
@@ -22,7 +22,7 @@ if (!isJitpack) {
 }
 
 group "de.randombyte"
-version "2.2.2"
+version "2.2.3"
 
 repositories {
     jcenter()
@@ -37,9 +37,9 @@ configurations {
 }
 
 dependencies {
-    shadow "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.41"
+    shadow "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.50"
     kapt "org.spongepowered:spongeapi:7.0.0"
-    shadow("com.github.randombyte-developer.kosp:kosp:v2.2.2") { transitive = false }
+    shadow("com.github.randombyte-developer.kosp:kosp:v2.2.3") { transitive = false }
     shadow "org.bstats:bstats-sponge:1.2"
 }
 
