@@ -13,7 +13,8 @@ class CommandUtilsServiceImpl(val configAccessor: ConfigAccessor) : CommandUtils
             executeCommand(
                     command = newCommand,
                     commandSource = player,
-                    replacements = mapOf("\$p" to player.name)
+                    replacements = mapOf("\$p" to player.name),
+                    commandIndex = 0
             )
             return
         }

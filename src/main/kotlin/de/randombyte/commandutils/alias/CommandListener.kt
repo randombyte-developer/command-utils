@@ -58,7 +58,7 @@ class CommandListener {
             configAccessor.lastAliasExecutions.save(newLastExecutionsConfig)
         }
 
-        aliasConfig.commands.forEach { command ->
+        aliasConfig.commands.forEachIndexed { index, command ->
             val replacements = if (commandSource is Player) {
                 // adding the legacy '$p'
                 arguments + Pair("\$p", commandSource.name)
@@ -67,7 +67,8 @@ class CommandListener {
             executeCommand(
                     command = command,
                     commandSource = commandSource,
-                    replacements = replacements
+                    replacements = replacements,
+                    commandIndex = index
             )
         }
     }

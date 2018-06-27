@@ -24,11 +24,12 @@ class PlayerJoinListener {
 
                     val currentConfig = commandUtils.configAccessor.executeWhenOnline.get()
 
-                    currentConfig.commands[playerUuid]?.forEach { command ->
+                    currentConfig.commands[playerUuid]?.forEachIndexed { index, command ->
                         executeCommand(
                                 command = command,
                                 commandSource = player,
-                                replacements = mapOf("\$p" to player.name)
+                                replacements = mapOf("\$p" to player.name),
+                                commandIndex = index
                         )
                     }
 

@@ -15,7 +15,8 @@ class IfCommand(val inverted: Boolean) : CommandExecutor {
 
         executeCommand(
                 command = conditionCommand,
-                commandSource = src
+                commandSource = src,
+                commandIndex = 0
         ) { commandResult -> // workaround for https://github.com/SpongePowered/SpongeCommon/issues/1922
             var truthy = commandResult.isTruthy()
 
@@ -24,7 +25,8 @@ class IfCommand(val inverted: Boolean) : CommandExecutor {
             if (truthy) {
                 commands.forEach { executeCommand(
                         command = it,
-                        commandSource = src
+                        commandSource = src,
+                        commandIndex = 0
                 ) }
             }
         }

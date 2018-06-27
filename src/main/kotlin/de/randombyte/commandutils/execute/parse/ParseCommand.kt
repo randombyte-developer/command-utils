@@ -19,7 +19,8 @@ class ParseCommand : CommandExecutor {
         executeCommand(
                 command = command,
                 commandSource = src,
-                target = target
+                target = target,
+                commandIndex = 0
         )
 
         return CommandResult.success()

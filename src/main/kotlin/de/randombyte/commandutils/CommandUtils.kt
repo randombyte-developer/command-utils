@@ -20,7 +20,6 @@ import de.randombyte.commandutils.executeonserverstartup.ServerStartupListener
 import de.randombyte.commandutils.service.CommandUtilsService
 import de.randombyte.commandutils.service.CommandUtilsServiceImpl
 import de.randombyte.kosp.extensions.toText
-import org.bstats.sponge.Metrics
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.command.args.GenericArguments.*
@@ -42,13 +41,13 @@ import java.nio.file.Path
         dependencies = [(Dependency(id = PLACEHOLDER_API_ID, optional = true))])
 class CommandUtils @Inject constructor(
         val logger: Logger,
-        @ConfigDir(sharedRoot = false) configPath: Path,
-        val bStats: Metrics
+        @ConfigDir(sharedRoot = false) configPath: Path
+        //val bStats: Metrics
 ) {
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "2.2.3"
+        const val VERSION = "2.2.4"
         const val AUTHOR = "RandomByte"
 
         const val PLACEHOLDER_API_ID = "placeholderapi"

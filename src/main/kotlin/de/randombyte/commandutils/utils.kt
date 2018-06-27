@@ -10,12 +10,19 @@ import org.spongepowered.api.scheduler.Task
 
 private const val EXECUTE_AS_CONSOLE_PREFIX = "*"
 
+/**
+ * When working around https://github.com/SpongePowered/SpongeCommon/issues/1922 you have to keep
+ * the order of execution in mind. [commandIndex] must be incremented for each command that should
+ * keep its order.
+ */
 fun executeCommand(
         command: String,
         commandSource: CommandSource,
         replacements: Map<String, String> = emptyMap(),
         target: Any = commandSource,
-        commandResultCallback: (CommandResult) -> Unit = { }) {
+        commandIndex: Int,
+        commandResultCallback: (CommandResult) -> Unit = { }
+) {
 
     val unprefixedCommand = command.removePrefix(EXECUTE_AS_CONSOLE_PREFIX)
     val executeAsConsole = command.startsWith(EXECUTE_AS_CONSOLE_PREFIX)
@@ -43,6 +50,6 @@ fun executeCommand(
                 val commandResult = finalCommandSource.executeCommand(processedCommand)
                 commandResultCallback(commandResult)
             }
-            .delayTicks(1)
+            .delayTicks(commandIndex.toLong())
             .submit(CommandUtils.INSTANCE)
 }

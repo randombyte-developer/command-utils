@@ -14,9 +14,10 @@ class ServerStartupListener {
                 .delayTicks(1)
                 .execute { ->
                     CommandUtils.INSTANCE.configAccessor.executeOnServerStartup.get().commands
-                            .forEach { executeCommand(
-                                    command = it,
-                                    commandSource = Sponge.getServer().console
+                            .forEachIndexed { index, command -> executeCommand(
+                                    command = command,
+                                    commandSource = Sponge.getServer().console,
+                                    commandIndex = index
                             ) }
                 }
                 .submit(CommandUtils.INSTANCE)

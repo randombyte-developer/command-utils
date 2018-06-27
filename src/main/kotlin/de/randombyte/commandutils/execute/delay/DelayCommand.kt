@@ -30,7 +30,8 @@ class DelayCommand : CommandExecutor {
                 .delay(delayMilliseconds, TimeUnit.MILLISECONDS)
                 .execute { -> executeCommand(
                         command = command,
-                        commandSource = src
+                        commandSource = src,
+                        commandIndex = 0
                 ) }
                 .submit(CommandUtils.INSTANCE)
 
