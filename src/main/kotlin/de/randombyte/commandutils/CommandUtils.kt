@@ -48,7 +48,7 @@ class CommandUtils @Inject constructor(
     companion object {
         const val ID = "command-utils"
         const val NAME = "CommandUtils"
-        const val VERSION = "2.2.4"
+        const val VERSION = "2.3.0"
         const val AUTHOR = "RandomByte"
 
         const val PLACEHOLDER_API_ID = "placeholderapi"
@@ -67,6 +67,7 @@ class CommandUtils @Inject constructor(
         const val QUANTITY_ARG = "quantity"
         const val PERMISSION_ARG = "permission"
         const val ITEM_ARG = "item"
+        const val CHANCE_ARG = "chance"
         const val CONDITION_COMMAND_ARG = "condition_command"
 
         private val LAZY_INSTANCE = lazy { Sponge.getPluginManager().getPlugin(ID).get().instance.get() as CommandUtils }
@@ -154,6 +155,12 @@ class CommandUtils @Inject constructor(
                 .executor(HasPermissionCommand())
                 .build()
 
+        val hasChanceCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.chance")
+                .arguments(doubleNum(CHANCE_ARG.toText()))
+                .executor(HasChanceCommand())
+                .build()
+
         val hasInHandCommandSpec = CommandSpec.builder()
                 .permission("$ROOT_PERMISSION.in-hand")
                 .arguments(
@@ -203,6 +210,7 @@ class CommandUtils @Inject constructor(
                         .child(hasMoneyCommandSpec, "money")
                         .child(hasPayedCommandSpec, "payed")
                         .child(hasPermissionCommandSpec, "permission")
+                        .child(hasChanceCommandSpec, "chance")
                         .child(CommandSpec.builder()
                                 .child(hasInHandCommandSpec, "hand")
                                 .build(), "in")

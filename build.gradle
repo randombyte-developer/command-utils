@@ -22,7 +22,7 @@ if (!isJitpack) {
 }
 
 group "de.randombyte"
-version "2.2.4"
+version "2.3.0"
 
 repositories {
     jcenter()
@@ -50,7 +50,6 @@ shadowJar {
 
     relocate "kotlin", "de.randombyte.commandutils.shaded.kotlin"
     relocate "de.randombyte.kosp", "de.randombyte.commandutils.shaded.kosp"
-    relocate "org.bstats", "de.randombyte.commandutils.shaded.bstats"
 
     classifier = null // Remove '-all' suffix from output file name
 }
