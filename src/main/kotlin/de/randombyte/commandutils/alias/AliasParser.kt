@@ -10,8 +10,8 @@ object AliasParser {
     enum class SplitType { WORD, ARG, VAR_ARG }
 
     fun parse(alias: String, command: String): Map<String, String>? {
-        val aliasSplits = alias.split(delimiters = " ")
-        val commandSplits = command.split(delimiters = " ", limit = aliasSplits.size)
+        val aliasSplits = alias.split(" ")
+        val commandSplits = command.split(" ", limit = aliasSplits.size)
 
         if (commandSplits.size < aliasSplits.size) return null // command is to short for this alias
 
