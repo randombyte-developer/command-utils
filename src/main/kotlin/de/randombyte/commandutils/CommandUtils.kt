@@ -179,6 +179,24 @@ class CommandUtils @Inject constructor(
                 .executor(HasGivenFromHandCommand(HandTypes.MAIN_HAND))
                 .build()
 
+        val hasInInventoryCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.in-inventory")
+                .arguments(
+                        userUuidFromNameOrUuid,
+                        string(ITEM_ARG.toText()),
+                        optional(integer(QUANTITY_ARG.toText())))
+                .executor(HasInInventoryCommand())
+                .build()
+
+        val hasGivenFromInventoryCommandSpec = CommandSpec.builder()
+                .permission("$ROOT_PERMISSION.given-from-inventory")
+                .arguments(
+                        userUuidFromNameOrUuid,
+                        string(ITEM_ARG.toText()),
+                        optional(integer(QUANTITY_ARG.toText())))
+                .executor(HasGivenFromInventoryCommand())
+                .build()
+
         val executeParsedCommandSpec = CommandSpec.builder()
                 .permission("$ROOT_PERMISSION.parsed")
                 .arguments(
@@ -213,10 +231,12 @@ class CommandUtils @Inject constructor(
                         .child(hasChanceCommandSpec, "chance")
                         .child(CommandSpec.builder()
                                 .child(hasInHandCommandSpec, "hand")
+                                .child(hasInInventoryCommandSpec, "inventory")
                                 .build(), "in")
                         .child(CommandSpec.builder()
                                 .child(CommandSpec.builder()
                                         .child(hasGivenFromHandCommandSpec, "hand")
+                                        .child(hasGivenFromInventoryCommandSpec, "inventory")
                                         .build(), "from")
                                 .build(), "given")
                 .build(), "has")
