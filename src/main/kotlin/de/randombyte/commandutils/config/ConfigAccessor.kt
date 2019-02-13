@@ -1,15 +1,15 @@
 package de.randombyte.commandutils.config
 
 import de.randombyte.kosp.config.ConfigAccessor
-import de.randombyte.kosp.config.ConfigHolder
 import java.nio.file.Path
 
 class ConfigAccessor(configPath: Path) : ConfigAccessor(configPath) {
 
-    val aliases: ConfigHolder<AliasConfig> = getConfigHolder("aliases.conf")
-    val executeWhenOnline: ConfigHolder<ExecuteWhenOnlineConfig> = getConfigHolder("execute-when-online.conf")
-    val executeOnServerStartup: ConfigHolder<ExecuteOnServerStartupConfig> = getConfigHolder("execute-on-server-startup.conf")
-    val lastAliasExecutions: ConfigHolder<LastAliasExecutionsConfig> = getConfigHolder("last-alias-executions.conf")
+    val general = getConfigHolder<GeneralConfig>("general.conf")
+    val aliases = getConfigHolder<AliasConfig>("aliases.conf")
+    val executeWhenOnline = getConfigHolder<ExecuteWhenOnlineConfig>("execute-when-online.conf")
+    val executeOnServerStartup = getConfigHolder<ExecuteOnServerStartupConfig>("execute-on-server-startup.conf")
+    val lastAliasExecutions = getConfigHolder<LastAliasExecutionsConfig>("last-alias-executions.conf")
 
-    override val holders = listOf(aliases, executeWhenOnline, executeOnServerStartup, lastAliasExecutions)
+    override val holders = listOf(general, aliases, executeWhenOnline, executeOnServerStartup, lastAliasExecutions)
 }

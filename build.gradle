@@ -38,7 +38,7 @@ configurations {
 
 dependencies {
     shadow "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11"
-    kapt "org.spongepowered:spongeapi:7.0.0"
+    kapt "org.spongepowered:spongeapi:7.1.0"
     shadow("com.github.randombyte-developer.kosp:kosp:v2.2.3") { transitive = false }
     shadow "org.bstats:bstats-sponge:1.4"
 }

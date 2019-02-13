@@ -19,7 +19,10 @@ import de.randombyte.commandutils.execute.whenonline.PlayerJoinListener
 import de.randombyte.commandutils.executeonserverstartup.ServerStartupListener
 import de.randombyte.commandutils.service.CommandUtilsService
 import de.randombyte.commandutils.service.CommandUtilsServiceImpl
+import de.randombyte.kosp.extensions.getPlayer
+import de.randombyte.kosp.extensions.sendTo
 import de.randombyte.kosp.extensions.toText
+import org.apache.commons.lang3.RandomUtils
 import org.bstats.sponge.Metrics2
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
@@ -27,13 +30,18 @@ import org.spongepowered.api.command.args.GenericArguments.*
 import org.spongepowered.api.command.spec.CommandSpec
 import org.spongepowered.api.config.ConfigDir
 import org.spongepowered.api.data.type.HandTypes
+import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.event.Listener
 import org.spongepowered.api.event.game.GameReloadEvent
 import org.spongepowered.api.event.game.state.GameInitializationEvent
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent
+import org.spongepowered.api.event.network.ClientConnectionEvent
 import org.spongepowered.api.plugin.Dependency
 import org.spongepowered.api.plugin.Plugin
+import org.spongepowered.api.scheduler.Task
 import java.nio.file.Path
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 @Plugin(id = ID,
         name = NAME,
@@ -82,6 +90,13 @@ class CommandUtils @Inject constructor(
         ConfigUpdater.from1_8(configAccessor, logger)
         configAccessor.reloadAll()
         registerCommands()
+
+        if (needsMotivationalSpeech()) {
+            Task.builder()
+                    .delay(RandomUtils.nextLong(80, 130), TimeUnit.SECONDS)
+                    .execute { -> Messages.motivationalSpeech.forEach { it.sendTo(Sponge.getServer().console) } }
+                    .submit(this)
+        }
     }
 
     @Listener
@@ -252,4 +267,25 @@ class CommandUtils @Inject constructor(
 
                 .build(), "commandutils", "cmdutils", "cu")
     }
+
+    val metricsNoteSent = mutableSetOf<UUID>()
+
+    @Listener
+    fun onPlayerJoin(event: ClientConnectionEvent.Join) {
+        val uuid = event.targetEntity.uniqueId
+        if (needsMotivationalSpeech(event.targetEntity)) {
+            Task.builder()
+                    .delay(RandomUtils.nextLong(10, 50), TimeUnit.SECONDS)
+                    .execute { ->
+                        val player = uuid.getPlayer() ?: return@execute
+                        metricsNoteSent += uuid
+                        Messages.motivationalSpeech.forEach { it.sendTo(player) }
+                    }
+                    .submit(this)
+        }
+    }
+
+    private fun needsMotivationalSpeech(player: Player? = null) = configAccessor.general.get().enableMetricsMessages &&
+            !Sponge.getMetricsConfigManager().areMetricsEnabled(this) &&
+            ((player == null) || player.uniqueId !in metricsNoteSent && player.hasPermission("nucleus.mute.base")) // also passes OPs without Nucleus
 }
