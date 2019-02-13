@@ -5,7 +5,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "gradle.plugin.flavor.pie:promptsign:1.1.0"
+        classpath "gradle.plugin.flavor.pie:promptsign:1.0.2"
     }
 }
 
@@ -22,7 +22,7 @@ if (!isJitpack) {
 }
 
 group "de.randombyte"
-version "2.3.0"
+version "2.4.0"
 
 repositories {
     jcenter()
